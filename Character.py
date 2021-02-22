@@ -6,7 +6,7 @@ from flask import Flask,jsonify,render_template,request
 app = Flask(__name__)
 
 
-client = pymongo.MongoClient("mongodb://admin:EPQcnb07382@node9140-advweb-02.app.ruk-com.cloud:11167")
+client = pymongo.MongoClient("mongodb://admin:EPQcnb07382@10.100.2.117:27017")
 
 db = client["stock"]
 
