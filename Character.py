@@ -11,20 +11,20 @@ client = pymongo.MongoClient("mongodb://admin:EPQcnb07382@10.100.2.117:27017")
 db = client["stock"]
 
 
-####### index ###############
+
 @app.route("/")
 def index():
     texts = "Hello World , Welcome to MongoDB"
     return texts
 
-########## GET ALL #################
+
 @app.route("/product", methods=['GET'])
 def get_allproduct():
     char = db.product
     output = char.find()
     return json_util.dumps(output)
 
-# ############## GET ONE ############################
+
 @app.route("/product/<name>", methods=['GET'])
 def get_oneproduct(name):
     char = db.product
@@ -33,7 +33,7 @@ def get_oneproduct(name):
     return json_util.dumps(output)
 
 
-# ######################### INSERT ####################
+
 @app.route('/product', methods=['POST'])
 def add_product():
   char = db.product
