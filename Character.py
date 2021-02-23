@@ -6,89 +6,103 @@ from flask import Flask,jsonify,render_template,request
 app = Flask(__name__)
 
 
-client = pymongo.MongoClient("mongodb://admin:EPQcnb07382@10.100.2.117:27017")#ประกาศตัวแปลโดยมีการเชื่อมต่อกับ mongo ที่ต้องมี user และ password
+client = pymongo.MongoClient("mongodb://admin:EPQcnb07382@node9140-advweb-02.app.ruk-com.cloud:11167")
 
 db = client["stock"]
 
 
-################## เป็นฟังชั่นสำหรับหน้า index ##################
 @app.route("/")
 def index():
-    texts = "Hello World , Welcome to MongoDB"   #ตัวแปลที่เก็บค่า string
-    return texts # retrun ค่า texts กลับไปรายงาน 
+    texts = "Hello World , Welcome to MongoDB"   
+    return texts 
 
-################## เป็นการทำงานในส่วนของการรายงาน product ทั้งหมด ##################
-@app.route("/product", methods=['GET']) # ทำการเอาข้อมูลในตารางผ่าน methods GET
+
+@app.route("/product", methods=['GET']) 
 def get_allproduct(): 
-    char = db.product #ประกาศตัวแปล char ไว้สำหรับตาราง product
-    output = char.find() #ตัวแปล output 
-    return json_util.dumps(output) # return ค่า output กลับไปแสดง
+    char = db.product 
+    output = char.find()  
+    return json_util.dumps(output) 
 
-################## การทำงานในการรายงาน product อย่างใดอย่างนึงกลับไป ##################
-@app.route("/product/<name>", methods=['GET']) # ทำการเอาข้อมูลในตาราง product และชื่อที่ตรงกันในตารางผ่าน methods GET
+
+@app.route("/product/<name>", methods=['GET']) 
 def get_oneproduct(name):
-    char = db.product #ประกาศตัวแปล char ไว้สำหรับตาราง product
-    output = char.find_one({'Name' : name}) #ตัวแปล output ที่มีค่าจากตารางตรงกัน
+    char = db.product 
+    output = char.find_one({'Name' : name}) 
     
-    return json_util.dumps(output) #return ค่า output กลับไปแสดง
+    return json_util.dumps(output) 
 
 
-################## การทำงานในการเพิ่มข้อมูลเข้าไปใน DB ##################
+
 @app.route('/product', methods=['POST'])
 def add_product():
-  char = db.product #ประกาศตัวแปล char ไว้สำหรับตาราง product
-  name = request.json['Name'] # ตัวแปล name  เพื่อเอาไว้เก็บค่าชื่อ 
-  price = request.json['price'] # ตัวแปล price เพื่อเอาไว้เก็บค่าราคา
-  color = request.json['color'] # ตัวแปล color เพื่อเอาไว้เก็บค่าสี
+  char = db.product 
+  name = request.json['Name'] 
+  price = request.json['price'] 
+  color = request.json['color'] 
   
   char_id = char.insert({'Name': name, 'price': price,
                         'color': color})
   new_char = char.find_one({'_id': char_id })
   output = {'Name' : new_char['Name'], 'price' : new_char['price'],
                         'color' : new_char['color']}
-  return jsonify(output) #ตัวแปล output ที่มีค่าจากตารางตรงกัน
+  return jsonify(output) 
     
 
-################## การทำงานในการแก้ไขข้อมูลของสินค้าใน DB ##################
+
 @app.route('/product/<name>', methods=['PUT'])
 def update_product(name):
-    char = db.product#ประกาศตัวแปล char ไว้สำหรับตาราง product
-    x = char.find_one({'Name' : name}) # ตัวแปล x เพื่อไว้เก็บค่าของสินค้าที่จะแก้ไข
-    if x:                                                         # เช็คว่า x มีชื่อที่ตรงกับตารางไหม
+    char = db.product
+    x = char.find_one({'Name' : name}) 
+    if x:                                                         
         myquery = {'Name' : x['Name'],'price' : x['price'],
                         'color' : x['color']
                        }
 
-    name = request.json['Name']       #
-    price = request.json['price']     #   สร้างตัวแปลที่มีข้อมูลข้างในของตาราง
-    color = request.json['color']     #
+    name = request.json['Name']      
+    price = request.json['price']     
+    color = request.json['color']     
 
     
-    newvalues = {"$set" : {'Name' : name, 'price' : price, #
-                        'color' : color                    #   set ข้อมูลใหม่ลงในตาราง
-                        }}                                 #
+    newvalues = {"$set" : {'Name' : name, 'price' : price, 
+                        'color' : color                 
+                        }}                                 
 
-    char_id = char.update_one(myquery, newvalues) # id ที่รับค่า ของ  myquery และ newvalues
+    char_id = char.update_one(myquery, newvalues) 
 
     output = {'Name' : name, 'price' : price,  
-                        'color' : color        #ตัวแปล output ที่มีค่าจากตาราง
+                        'color' : color        
                         }
 
-    return jsonify(output) # return ค่า output
+    return jsonify(output) 
 
 
-################## การทำงานมนการลบข้อมูล ในตาราง DB ##################
 @app.route('/product/<name>', methods=['DELETE'])
 def delete_product(name):
-    char = db.product #ประกาศตัวแปล char ไว้สำหรับตาราง product
-    x = char.find_one({'Name' : name})  #ตัวแปล x ที่มีค่าจาก หัวตาราง เหมือนกัน
+    char = db.product 
+    x = char.find_one({'Name' : name})  
 
-    char_id = char.delete_one(x) #ลบ id ของสินค้าในตารางที่มีชื่อตรงกัน
+    char_id = char.delete_one(x) 
 
-    output = "Deleted complete" #โชว์ว่าลบสำเร็จ
+    output = "Deleted complete" 
 
-    return jsonify(output) # return ค่า output
+    return jsonify(output) 
+
+@app.route("/details", methods=['GET'])
+def get_Join():
+    pro = db.product
+    pipel = pro.aggregate( [     
+            {
+                '$lookup':  {
+                        'from' : 'detail',
+                        'localField': 'id_detail',
+                        'foreignField':'id_detail' ,
+                        'as': 'Join'
+                }
+            }   
+        ]  
+    )  
+    return json_util.dumps(pipel)
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port = 80)
+    app.run(host='0.0.0.0',port = 5000)
